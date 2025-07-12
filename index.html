@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BST CRUD Web Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Binary Search Tree - CRUD Tool</h1>
+
+    <div class="controls">
+      <input type="number" id="valueInput" placeholder="Enter value">
+      <button onclick="insertNode()">Insert</button>
+      <button onclick="deleteNode()">Delete</button>
+    </div>
+
+    <div class="controls">
+      <input type="number" id="oldValue" placeholder="Old Value">
+      <input type="number" id="newValue" placeholder="New Value">
+      <button onclick="updateNode()">Update</button>
+    </div>
+
+    <h2>Inorder Traversal:</h2>
+    <pre id="output">Empty Tree</pre>
+  </div>
+
+  <script>
+    class Node {
+      constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+      }
+    }
+
+    class BST {
+      constructor() {
+        this.root = null;
+      }
+
+      insert(value) {
+        const newNode = new Node(value);
+        if (!this.root) return this.root = newNode;
+
+        let current = this.root;
+        while (true) {
+          if (value === current.value) return; // prevent duplicates
+          if (value < current.value) {
+            if (!current.left) return current.left = newNode;
+            current = current.left;
+          } else {
+            if (!current.right) return current.right = newNode;
+            current = current.right;
+          }
+        }
+      }
+
+      delete(value, root = this.root) {
+        if (!root) return root;
+
+        if (value < root.value) root.left = this.delete(value, root.left);
+        else if (value > root.value) root.right = this.delete(value, root.right);
+        else {
+          if (!root.left) return root.right;
+          if (!root.right) return root.left;
+
+          let minLarger = this.findMin(root.right);
+          root.value = minLarger.value;
+          root.right = this.delete(minLarger.value, root.right);
+        }
+        return root;
+      }
+
+      findMin(node) {
+        while (node.left) node = node.left;
+        return node;
+      }
+
+      inorder(root = this.root, result = []) {
+        if (!root) return result;
+        this.inorder(root.left, result);
+        result.push(root.value);
+        this.inorder(root.right, result);
+        return result;
+      }
+
+      update(oldValue, newValue) {
+        this.root = this.delete(oldValue);
+        this.insert(newValue);
+      }
+    }
+
+    const bst = new BST();
+
+    function insertNode() {
+      const value = parseInt(document.getElementById('valueInput').value);
+      if (!isNaN(value)) {
+        bst.insert(value);
+        showInorder();
+        document.getElementById('valueInput').value = "";
+      }
+    }
+
+    function deleteNode() {
+      const value = parseInt(document.getElementById('valueInput').value);
+      if (!isNaN(value)) {
+        bst.root = bst.delete(value);
+        showInorder();
+        document.getElementById('valueInput').value = "";
+      }
+    }
+
+    function updateNode() {
+      const oldVal = parseInt(document.getElementById('oldValue').value);
+      const newVal = parseInt(document.getElementById('newValue').value);
+      if (!isNaN(oldVal) && !isNaN(newVal)) {
+        bst.update(oldVal, newVal);
+        showInorder();
+        document.getElementById('oldValue').value = "";
+        document.getElementById('newValue').value = "";
+      }
+    }
+
+    function showInorder() {
+      const result = bst.inorder().join(" → ");
+      document.getElementById('output').textContent = result || "Empty Tree";
+    }
+  </script>
+</body>
+</html>
